@@ -1,0 +1,7 @@
+ <!DOCTYPE RCC>
+ <RCC version="1.0">
+ <qresource>
+ <file>HyperThoughtUtilities/HyperThoughtUtilitiesLicense.txt</file>
+ <file>HyperThoughtUtilities/HyperThoughtUtilitiesDescription.txt</file>
+ </qresource>
+ </RCC>
