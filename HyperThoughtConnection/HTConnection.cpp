@@ -65,7 +65,11 @@ HTConnection* HTConnection::GetExistingConnection(const AbstractFilter* filter)
   const OpenHyperThoughtConnection* htFilter = nullptr;
   while(nullptr == htFilter && nullptr != filter)
   {
-    htFilter = dynamic_cast<const OpenHyperThoughtConnection*>(filter);
+    // Do not check disabled filters
+    if(filter->getEnabled())
+    {
+      htFilter = dynamic_cast<const OpenHyperThoughtConnection*>(filter);
+    }
     if(nullptr == htFilter)
     {
       filter = filter->getPreviousFilter().lock().get();
