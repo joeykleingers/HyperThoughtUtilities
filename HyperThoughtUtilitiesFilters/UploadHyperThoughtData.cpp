@@ -107,6 +107,17 @@ void UploadHyperThoughtData::dataCheck()
     QString ss = "HyperThought connection is invalid or disconnected";
     setErrorCondition(-688, ss);
   }
+  if(!connection->getFileCache().hasFileInfo(m_UploadFilePath))
+  {
+    QString ss = "The local HyperThought cache does not contain a value for the specified path";
+    setErrorCondition(-679, ss);
+  }
+  if(connection->getFileCache().getFileInfo(m_UploadFilePath).isDir())
+  {
+    QString ss = "The selected HyperThought file must be be a directory";
+    setErrorCondition(-681, ss);
+    return;
+  }
 }
 
 // -----------------------------------------------------------------------------
