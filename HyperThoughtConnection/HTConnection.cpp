@@ -228,7 +228,7 @@ void HTConnection::onAuthenticationErr(QNetworkReply::NetworkError err)
   QNetworkReply* reply = dynamic_cast<QNetworkReply*>(sender());
   if(nullptr == reply)
   {
-    throw std::exception("Invalid sender. QNetworkReply required");
+    throw std::runtime_error("Invalid sender. QNetworkReply required");
   }
 
   // Check for unhandled error
@@ -244,7 +244,7 @@ void HTConnection::onAuthenticationResponse()
   QNetworkReply* reply = dynamic_cast<QNetworkReply*>(sender());
   if(nullptr == reply)
   {
-    throw std::exception("Invalid sender. QNetworkReply required");
+    throw std::runtime_error("Invalid sender. QNetworkReply required");
   }
 
   // Check for unhandled error
@@ -332,7 +332,7 @@ void HTConnection::onAccessTokenErr(QNetworkReply::NetworkError err)
   QNetworkReply* reply = dynamic_cast<QNetworkReply*>(sender());
   if(nullptr == reply)
   {
-    throw std::exception("Invalid sender. QNetworkReply required");
+    throw std::runtime_error("Invalid sender. QNetworkReply required");
   }
 
   qDebug() << reply->errorString();
@@ -352,7 +352,7 @@ void HTConnection::onAccessTokenResponse()
   if(nullptr == reply)
   {
     setStatus(Status::Disconnected);
-    throw std::exception("Invalid sender. QNetworkReply required");
+    throw std::runtime_error("Invalid sender. QNetworkReply required");
   }
 
   // Check for unhandled error

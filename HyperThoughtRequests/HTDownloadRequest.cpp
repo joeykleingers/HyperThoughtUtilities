@@ -131,7 +131,7 @@ void HTDownloadRequest::onDownloadProgress(int64_t bytesReceived, int64_t bytesT
   QNetworkReply* reply = dynamic_cast<QNetworkReply*>(sender());
   if(nullptr == reply)
   {
-    throw std::exception("Invalid sender. QNetworkReply required");
+    throw std::runtime_error("Invalid sender. QNetworkReply required");
   }
 
   // QDataStream::operator<< stringifies the byte data.

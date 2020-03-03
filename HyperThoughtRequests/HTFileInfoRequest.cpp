@@ -144,7 +144,7 @@ void HTFileInfoRequest::onFileInfoResponse()
   QNetworkReply* reply = dynamic_cast<QNetworkReply*>(sender());
   if(nullptr == reply)
   {
-    throw std::exception("Invalid sender. QNetworkReply required");
+    throw std::runtime_error("Invalid sender. QNetworkReply required");
   }
 
   if(reply->error() <= 0)

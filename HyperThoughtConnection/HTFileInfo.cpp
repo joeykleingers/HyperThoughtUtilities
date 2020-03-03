@@ -283,7 +283,8 @@ void HTFileInfo::parseMetaData(const QJsonArray& json)
 HTFileInfo::NameValuePairs parseNameValuePairs(const QJsonObject& json)
 {
   HTFileInfo::NameValuePairs values;
-  for(auto& iter = json.begin(); iter != json.end(); iter++)
+  auto iter = json.begin();
+  for(; iter != json.end(); iter++)
   {
     values[iter.key()] = iter.value().toString();
   }
@@ -308,7 +309,8 @@ void HTFileInfo::parseRestrictions(const QJsonObject& json)
 QJsonObject writeNamedValuesToJson(const HTFileInfo::NameValuePairs& valuePairs)
 {
   QJsonObject json;
-  for(auto& iter = valuePairs.begin(); iter != valuePairs.end(); iter++)
+  auto iter = valuePairs.begin();
+  for(; iter != valuePairs.end(); iter++)
   {
     json[iter.key()] = iter.value();
   }
