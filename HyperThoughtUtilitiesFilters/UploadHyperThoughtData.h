@@ -54,6 +54,16 @@ class HyperThoughtUtilities_EXPORT UploadHyperThoughtData : public AbstractFilte
 #ifdef SIMPL_ENABLE_PYTHON
   // clang-format off
   PYB11_CREATE_BINDINGS(UploadHyperThoughtData SUPERCLASS AbstractFilter)
+  PYB11_SHARED_POINTERS(UploadHyperThoughtData)
+  PYB11_FILTER_NEW_MACRO(UploadHyperThoughtData)
+  PYB11_FILTER_PARAMETER(QString, LocalFilePath)
+  PYB11_FILTER_PARAMETER(HTFilePath, UploadFilePath)
+  PYB11_FILTER_PARAMETER(bool, UpdateMetaData)
+  PYB11_FILTER_PARAMETER(HTMetaData, MetaData)
+  PYB11_PROPERTY(QString LocalFilePath READ getLocalFilePath WRITE setLocalFilePath)
+  PYB11_PROPERTY(HTFilePath UploadFilePath READ getUploadFilePath WRITE setUploadFilePath)
+  PYB11_PROPERTY(bool UpdateMetaData READ getUpdatesMetaData WRITE setUpdatesMetaData)
+  PYB11_PROPERTY(HTMetaData MetaData READ getMetaData WRITE setMetaData)
 
   // clang-format on
 #endif

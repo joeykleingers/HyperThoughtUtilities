@@ -56,7 +56,10 @@ class HyperThoughtUtilities_EXPORT OpenHyperThoughtConnection : public AbstractF
 #ifdef SIMPL_ENABLE_PYTHON
   // clang-format off
   PYB11_CREATE_BINDINGS(OpenHyperThoughtConnection SUPERCLASS AbstractFilter)
-
+  PYB11_SHARED_POINTERS(OpenHyperThoughtConnection)
+  PYB11_FILTER_NEW_MACRO(OpenHyperThoughtConnection)
+  PYB11_FILTER_PARAMETER(QString, ApiAccess)
+  PYB11_PROPERTY(QString ApiAccess READ getApiAccess WRITE setApiAccess)
   // clang-format on
 #endif
 

@@ -54,7 +54,12 @@ class HyperThoughtUtilities_EXPORT TagHyperThoughtData : public AbstractFilter
 #ifdef SIMPL_ENABLE_PYTHON
   // clang-format off
   PYB11_CREATE_BINDINGS(TagHyperThoughtData SUPERCLASS AbstractFilter)
-
+  PYB11_SHARED_POINTERS(TagHyperThoughtData)
+  PYB11_FILTER_NEW_MACRO(TagHyperThoughtData)
+  PYB11_FILTER_PARAMETER(HTFilePath, HyperThoughtPath)
+  PYB11_FILTER_PARAMETER(HTMetaData, MetaData)
+  PYB11_PROPERTY(HTFilePath HyperThoughtPath READ getHyperThoughtPath WRITE setHyperThoughtPath)
+  PYB11_PROPERTY(HTMetaData MetaData READ getMetaData WRITE setMetaData)
   // clang-format on
 #endif
 

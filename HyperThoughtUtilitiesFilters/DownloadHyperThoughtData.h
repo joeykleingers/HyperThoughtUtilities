@@ -58,7 +58,12 @@ class HyperThoughtUtilities_EXPORT DownloadHyperThoughtData : public AbstractFil
 #ifdef SIMPL_ENABLE_PYTHON
   // clang-format off
   PYB11_CREATE_BINDINGS(DownloadHyperThoughtData SUPERCLASS AbstractFilter)
-
+  PYB11_SHARED_POINTERS(DownloadHyperThoughtData)
+  PYB11_FILTER_NEW_MACRO(DownloadHyperThoughtData)
+  PYB11_FILTER_PARAMETER(HTFilePath, FilePath)
+  PYB11_FILTER_PARAMETER(QString, DownloadDir)
+  PYB11_PROPERTY(HTFilePath FilePath READ getFilePath WRITE setFilePath)
+  PYB11_PROPERTY(QString DownloadDir READ getDownloadDir WRITE setDownloadDir)
   // clang-format on
 #endif
 
