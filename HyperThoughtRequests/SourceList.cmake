@@ -3,6 +3,7 @@ set(HyperThoughtRequestsDir ${${PLUGIN_NAME}_SOURCE_DIR}/HyperThoughtRequests)
 set(${PLUGIN_NAME}_Requests_HDRS
     ${HyperThoughtRequestsDir}/HTAbstractRequest.h
     ${HyperThoughtRequestsDir}/HTAbstractUploadRequest.h
+    ${HyperThoughtRequestsDir}/HTDataUploadRequest.h
     ${HyperThoughtRequestsDir}/HTDownloadRequest.h
     ${HyperThoughtRequestsDir}/HTFileInfoRequest.h
     ${HyperThoughtRequestsDir}/HTFileUploadRequest.h
@@ -12,6 +13,7 @@ set(${PLUGIN_NAME}_Requests_HDRS
 set(${PLUGIN_NAME}_Requests_SRCS
     ${HyperThoughtRequestsDir}/HTAbstractRequest.cpp
     ${HyperThoughtRequestsDir}/HTAbstractUploadRequest.cpp
+    ${HyperThoughtRequestsDir}/HTDataUploadRequest.cpp
     ${HyperThoughtRequestsDir}/HTDownloadRequest.cpp
     ${HyperThoughtRequestsDir}/HTFileInfoRequest.cpp
     ${HyperThoughtRequestsDir}/HTFileUploadRequest.cpp

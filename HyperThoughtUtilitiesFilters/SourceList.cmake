@@ -20,6 +20,7 @@ set(_PublicFilters
   OpenHyperThoughtConnection
   DownloadHyperThoughtData
   UploadHyperThoughtData
+  UploadHyperThoughtFile
   TagHyperThoughtData
 )
 

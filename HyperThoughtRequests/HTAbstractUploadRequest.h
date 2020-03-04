@@ -118,6 +118,14 @@ protected:
   void initFileUpload(const HTFilePath& uploadTarget, const QString& localPath);
 
   /**
+   * @brief Initialize the data upload using the data, name, and path.
+   * @param data
+   * @param name
+   * @param path
+   */
+  void initDataUpload(const QByteArray& data);
+
+  /**
    * @brief Uploads the QByteArray data to the URL provided by HyperThought in the initFileUpload response.
    * Calls onDataUploaded() when completed.
    */
@@ -133,6 +141,21 @@ protected:
    * @brief Requests HyperThought update the metadata for the uploaded file.
    */
   void patchMetaData();
+
+  /**
+   * @brief Create a request that gets the upload URL from HyperThought
+   * @param json
+   * @return
+   */
+  QNetworkRequest createUploadURLRequest(const QByteArray& json) const;
+
+  /**
+   * @brief Sends the upload URL request to HyperThought
+   * @param request
+   * @param json
+   * @return
+   */
+  QNetworkReply* sendUploadURLRequest(const QNetworkRequest& request, const QByteArray& json) const;
 
   /**
    * @brief Creates the json payload for the initial upload request.

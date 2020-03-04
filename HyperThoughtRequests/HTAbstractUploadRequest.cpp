@@ -115,21 +115,51 @@ void HTAbstractUploadRequest::initFileUpload(const HTFilePath& uploadTarget, con
 
   // Request the upload URL from HyperThought
   QByteArray json = getInitPayload().toJson(QJsonDocument::Compact);
+  auto request = createUploadURLRequest(json);
+
+  // Send request and wait for a reply.
+  auto reply = sendUploadURLRequest(request, json);
+
+  // If asynchronous, wait for a response before proceeding
+  waitForResponse(reply);
+}
+
+// -----------------------------------------------------------------------------
+void HTAbstractUploadRequest::initDataUpload(const QByteArray& data)
+{
+  m_UploadData = data;
+
+  // Request the upload URL from HyperThought
+  QByteArray json = getInitPayload().toJson(QJsonDocument::Compact);
+  auto request = createUploadURLRequest(json);
+
+  // Send request and wait for a reply.
+  auto reply = sendUploadURLRequest(request, json);
+
+  // If asynchronous, wait for a response before proceeding
+  waitForResponse(reply);
+}
+
+// -----------------------------------------------------------------------------
+QNetworkRequest HTAbstractUploadRequest::createUploadURLRequest(const QByteArray& json) const
+{
   QByteArray jsonSize = QByteArray::number(json.size());
   QString genUploadUrl = getFilesApiUrl() + "generate-upload-url/";
   auto request = getConnection()->createDefaultNetworkRequest();
   request.setRawHeader("Content-Type", "application/json");
   request.setRawHeader("Content-Length", jsonSize);
   request.setUrl(genUploadUrl);
+  return request;
+}
 
-  // Send request and wait for a reply.
+// -----------------------------------------------------------------------------
+QNetworkReply* HTAbstractUploadRequest::sendUploadURLRequest(const QNetworkRequest& request, const QByteArray& json) const
+{
   auto reply = getConnection()->post(request, json);
   connect(reply, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, &HTAbstractUploadRequest::uploadFailed);
   connect(reply, &QNetworkReply::finished, this, &HTAbstractUploadRequest::onInitResponse);
   connect(reply, &QNetworkReply::finished, reply, &QNetworkReply::deleteLater);
-
-  // If asynchronous, wait for a response before proceeding
-  waitForResponse(reply);
+  return reply;
 }
 
 // -----------------------------------------------------------------------------

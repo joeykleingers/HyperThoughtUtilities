@@ -31,28 +31,26 @@
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#include "UploadHyperThoughtData.h"
+#include "UploadHyperThoughtFile.h"
 
 #include <QtCore/QTextStream>
 
 #include "SIMPLib/Common/Constants.h"
-#include "SIMPLib/DataContainers/DataContainerArray.h"
-#include "SIMPLib/FilterParameters/DataArraySelectionFilterParameter.h"
+
 #include "SIMPLib/FilterParameters/InputFileFilterParameter.h"
 #include "SIMPLib/FilterParameters/LinkedBooleanFilterParameter.h"
-#include "SIMPLib/FilterParameters/StringFilterParameter.h"
 
 #include "HyperThoughtUtilities/FilterParameters/HTMetaDataFilterParameter.h"
 #include "HyperThoughtUtilities/FilterParameters/HTUploadPathFilterParameter.h"
 #include "HyperThoughtUtilities/HyperThoughtConnection/HTConnection.h"
-#include "HyperThoughtUtilities/HyperThoughtRequests/HTDataUploadRequest.h"
+#include "HyperThoughtUtilities/HyperThoughtRequests/HTFileUploadRequest.h"
 #include "HyperThoughtUtilities/HyperThoughtUtilitiesConstants.h"
 #include "HyperThoughtUtilities/HyperThoughtUtilitiesVersion.h"
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-UploadHyperThoughtData::UploadHyperThoughtData()
+UploadHyperThoughtFile::UploadHyperThoughtFile()
 {
   initialize();
 }
@@ -60,12 +58,12 @@ UploadHyperThoughtData::UploadHyperThoughtData()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-UploadHyperThoughtData::~UploadHyperThoughtData() = default;
+UploadHyperThoughtFile::~UploadHyperThoughtFile() = default;
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void UploadHyperThoughtData::initialize()
+void UploadHyperThoughtFile::initialize()
 {
   clearErrorCode();
   clearWarningCode();
@@ -75,20 +73,16 @@ void UploadHyperThoughtData::initialize()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void UploadHyperThoughtData::setupFilterParameters()
+void UploadHyperThoughtFile::setupFilterParameters()
 {
   FilterParameterVectorType parameters;
 
-  {
-    DataArraySelectionFilterParameter::RequirementType req;
-    parameters.push_back(SIMPL_NEW_DA_SELECTION_FP("Upload Data Array", UploadDataArrayPath, FilterParameter::Parameter, UploadHyperThoughtData, req));
-  }
-  parameters.push_back(SIMPL_NEW_STRING_FP("HyperThought File Name", UploadFileName, FilterParameter::Parameter, UploadHyperThoughtData));
-  parameters.push_back(SIMPL_NEW_HTUPLOAD_PATH_FP("HyperThought Path", UploadFilePath, FilterParameter::Parameter, UploadHyperThoughtData));
+  parameters.push_back(SIMPL_NEW_INPUT_FILE_FP("Upload File", LocalFilePath, FilterParameter::Parameter, UploadHyperThoughtFile));
+  parameters.push_back(SIMPL_NEW_HTUPLOAD_PATH_FP("HyperThought Path", UploadFilePath, FilterParameter::Parameter, UploadHyperThoughtFile));
 
   QStringList linkedProps = { "MetaData" };
-  parameters.push_back(SIMPL_NEW_LINKED_BOOL_FP("Set Metadata", UpdatesMetaData, FilterParameter::Parameter, UploadHyperThoughtData, linkedProps));
-  parameters.push_back(SIMPL_NEW_HTMETADATA_FP("Meta Data", MetaData, FilterParameter::Parameter, UploadHyperThoughtData));
+  parameters.push_back(SIMPL_NEW_LINKED_BOOL_FP("Set Metadata", UpdatesMetaData, FilterParameter::Parameter, UploadHyperThoughtFile, linkedProps));
+  parameters.push_back(SIMPL_NEW_HTMETADATA_FP("Meta Data", MetaData, FilterParameter::Parameter, UploadHyperThoughtFile));
 
   setFilterParameters(parameters);
 }
@@ -96,7 +90,7 @@ void UploadHyperThoughtData::setupFilterParameters()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void UploadHyperThoughtData::dataCheck()
+void UploadHyperThoughtFile::dataCheck()
 {
   clearErrorCode();
   clearWarningCode();
@@ -120,18 +114,16 @@ void UploadHyperThoughtData::dataCheck()
   }
   if(connection->getFileCache().getFileInfo(m_UploadFilePath).isDir())
   {
-    QString ss = "The selected HyperThought path must be to a directory";
+    QString ss = "The selected HyperThought file must be be a directory";
     setErrorCondition(-681, ss);
     return;
   }
-
-  m_UploadDataArrayWeakPtr = getDataContainerArray()->getPrereqIDataArrayFromPath<IDataArray, AbstractFilter>(this, m_UploadDataArrayPath);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void UploadHyperThoughtData::preflight()
+void UploadHyperThoughtFile::preflight()
 {
   // These are the REQUIRED lines of CODE to make sure the filter behaves correctly
   setInPreflight(true);              // Set the fact that we are preflighting.
@@ -145,7 +137,7 @@ void UploadHyperThoughtData::preflight()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void UploadHyperThoughtData::execute()
+void UploadHyperThoughtFile::execute()
 {
   initialize();
   dataCheck();
@@ -159,55 +151,26 @@ void UploadHyperThoughtData::execute()
     return;
   }
 
-  IDataArrayShPtrType uploadDataArrayPtr = m_UploadDataArrayWeakPtr.lock();
-  if(uploadDataArrayPtr == nullptr)
-  {
-    QString ss = "The Upload Data Array was unable to be used.  Please contact the DREAM3D developers for more information.";
-    setErrorCondition(-682, ss);
-    return;
-  }
-
-  QByteArray data = convertDataArrayToByteArray(uploadDataArrayPtr);
-
-  uploadData(data);
-}
-
-// -----------------------------------------------------------------------------
-QByteArray UploadHyperThoughtData::convertDataArrayToByteArray(const IDataArrayShPtrType& dataArrayPtr)
-{
-  QByteArray data;
-  QTextStream out(&data);
-
-  out << "Name: " << dataArrayPtr->getName() << "\n";
-  out << "Tuple Count: " << dataArrayPtr->getNumberOfTuples() << "\n";
-  out << "Component Count: " << dataArrayPtr->getNumberOfComponents() << "\n";
-  out << "Data Type: " << dataArrayPtr->getTypeAsString() << "\n\n";
-  for(size_t tuple = 0; tuple < dataArrayPtr->getNumberOfTuples(); tuple++)
-  {
-    dataArrayPtr->printTuple(out, tuple);
-    out << "\n";
-  }
-
-  return data;
+  uploadFile();
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void UploadHyperThoughtData::uploadData(const QByteArray& data)
+void UploadHyperThoughtFile::uploadFile()
 {
   HTConnection* connection = HTConnection::GetExistingConnection(this);
-  m_UploadRequest = new HTDataUploadRequest(connection, m_UploadFilePath, data, m_UploadFileName);
+  m_UploadRequest = new HTFileUploadRequest(connection, m_UploadFilePath, m_LocalFilePath);
   m_UploadRequest->setMetaData(m_UpdateMetaData, m_MetaData);
-  connect(m_UploadRequest, &HTDataUploadRequest::uploadComplete, this, &UploadHyperThoughtData::onUploadComplete);
-  connect(m_UploadRequest, &HTDataUploadRequest::uploadFailed, this, &UploadHyperThoughtData::onUploadError);
+  connect(m_UploadRequest, &HTFileUploadRequest::uploadComplete, this, &UploadHyperThoughtFile::onUploadComplete);
+  connect(m_UploadRequest, &HTFileUploadRequest::uploadFailed, this, &UploadHyperThoughtFile::onUploadError);
   m_UploadRequest->exec();
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void UploadHyperThoughtData::onUploadComplete()
+void UploadHyperThoughtFile::onUploadComplete()
 {
   if(nullptr != m_UploadRequest)
   {
@@ -219,7 +182,7 @@ void UploadHyperThoughtData::onUploadComplete()
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void UploadHyperThoughtData::onUploadError(QNetworkReply::NetworkError err)
+void UploadHyperThoughtFile::onUploadError(QNetworkReply::NetworkError err)
 {
   if(nullptr != m_UploadRequest)
   {
@@ -227,46 +190,30 @@ void UploadHyperThoughtData::onUploadError(QNetworkReply::NetworkError err)
     m_UploadRequest = nullptr;
   }
 
-  QString ss = tr("Encountered an error while attempting to upload data to HyperThought.");
+  QString ss = tr("Encountered an error while attempting to upload file to HyperThought.");
   setErrorCondition(-674, ss);
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-DataArrayPath UploadHyperThoughtData::getUploadDataArrayPath() const
+QString UploadHyperThoughtFile::getLocalFilePath() const
 {
-  return m_UploadDataArrayPath;
+  return m_LocalFilePath;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void UploadHyperThoughtData::setUploadDataArrayPath(const DataArrayPath& path)
+void UploadHyperThoughtFile::setLocalFilePath(const QString& path)
 {
-  m_UploadDataArrayPath = path;
+  m_LocalFilePath = path;
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString UploadHyperThoughtData::getUploadFileName() const
-{
-  return m_UploadFileName;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-void UploadHyperThoughtData::setUploadFileName(const QString& fileName)
-{
-  m_UploadFileName = fileName;
-}
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-HTFilePath UploadHyperThoughtData::getUploadFilePath() const
+HTFilePath UploadHyperThoughtFile::getUploadFilePath() const
 {
   return m_UploadFilePath;
 }
@@ -274,7 +221,7 @@ HTFilePath UploadHyperThoughtData::getUploadFilePath() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void UploadHyperThoughtData::setUploadFilePath(const HTFilePath& filePath)
+void UploadHyperThoughtFile::setUploadFilePath(const HTFilePath& filePath)
 {
   m_UploadFilePath = filePath;
 }
@@ -282,7 +229,7 @@ void UploadHyperThoughtData::setUploadFilePath(const HTFilePath& filePath)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-bool UploadHyperThoughtData::getUpdatesMetaData() const
+bool UploadHyperThoughtFile::getUpdatesMetaData() const
 {
   return m_UpdateMetaData;
 }
@@ -290,7 +237,7 @@ bool UploadHyperThoughtData::getUpdatesMetaData() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void UploadHyperThoughtData::setUpdatesMetaData(bool updates)
+void UploadHyperThoughtFile::setUpdatesMetaData(bool updates)
 {
   m_UpdateMetaData = updates;
 }
@@ -298,7 +245,7 @@ void UploadHyperThoughtData::setUpdatesMetaData(bool updates)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-HTMetaData UploadHyperThoughtData::getMetaData() const
+HTMetaData UploadHyperThoughtFile::getMetaData() const
 {
   return m_MetaData;
 }
@@ -306,7 +253,7 @@ HTMetaData UploadHyperThoughtData::getMetaData() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-void UploadHyperThoughtData::setMetaData(const HTMetaData& data)
+void UploadHyperThoughtFile::setMetaData(const HTMetaData& data)
 {
   m_MetaData = data;
 }
@@ -314,9 +261,9 @@ void UploadHyperThoughtData::setMetaData(const HTMetaData& data)
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-AbstractFilter::Pointer UploadHyperThoughtData::newFilterInstance(bool copyFilterParameters) const
+AbstractFilter::Pointer UploadHyperThoughtFile::newFilterInstance(bool copyFilterParameters) const
 {
-  UploadHyperThoughtData::Pointer filter = UploadHyperThoughtData::New();
+  UploadHyperThoughtFile::Pointer filter = UploadHyperThoughtFile::New();
   if(copyFilterParameters)
   {
     copyFilterParameterInstanceVariables(filter.get());
@@ -327,7 +274,7 @@ AbstractFilter::Pointer UploadHyperThoughtData::newFilterInstance(bool copyFilte
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString UploadHyperThoughtData::getCompiledLibraryName() const
+QString UploadHyperThoughtFile::getCompiledLibraryName() const
 {
   return HyperThoughtUtilitiesConstants::HyperThoughtUtilitiesBaseName;
 }
@@ -335,7 +282,7 @@ QString UploadHyperThoughtData::getCompiledLibraryName() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString UploadHyperThoughtData::getBrandingString() const
+QString UploadHyperThoughtFile::getBrandingString() const
 {
   return "HyperThoughtUtilities";
 }
@@ -343,7 +290,7 @@ QString UploadHyperThoughtData::getBrandingString() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString UploadHyperThoughtData::getFilterVersion() const
+QString UploadHyperThoughtFile::getFilterVersion() const
 {
   QString version;
   QTextStream vStream(&version);
@@ -354,7 +301,7 @@ QString UploadHyperThoughtData::getFilterVersion() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString UploadHyperThoughtData::getGroupName() const
+QString UploadHyperThoughtFile::getGroupName() const
 {
   return SIMPL::FilterGroups::Unsupported;
 }
@@ -362,7 +309,7 @@ QString UploadHyperThoughtData::getGroupName() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString UploadHyperThoughtData::getSubGroupName() const
+QString UploadHyperThoughtFile::getSubGroupName() const
 {
   return "HyperThought Utilities";
 }
@@ -370,29 +317,29 @@ QString UploadHyperThoughtData::getSubGroupName() const
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QString UploadHyperThoughtData::getHumanLabel() const
+QString UploadHyperThoughtFile::getHumanLabel() const
 {
-  return "Upload HyperThought Data";
+  return "Upload HyperThought File";
 }
 
 // -----------------------------------------------------------------------------
 //
 // -----------------------------------------------------------------------------
-QUuid UploadHyperThoughtData::getUuid() const
+QUuid UploadHyperThoughtFile::getUuid() const
 {
   return QUuid("{afff1ad4-a7a3-53a6-9a8e-02cccaaf6e48}");
 }
 
 // -----------------------------------------------------------------------------
-UploadHyperThoughtData::Pointer UploadHyperThoughtData::NullPointer()
+UploadHyperThoughtFile::Pointer UploadHyperThoughtFile::NullPointer()
 {
   return Pointer(static_cast<Self*>(nullptr));
 }
 
 // -----------------------------------------------------------------------------
-std::shared_ptr<UploadHyperThoughtData> UploadHyperThoughtData::New()
+std::shared_ptr<UploadHyperThoughtFile> UploadHyperThoughtFile::New()
 {
-  struct make_shared_enabler : public UploadHyperThoughtData
+  struct make_shared_enabler : public UploadHyperThoughtFile
   {
   };
   std::shared_ptr<make_shared_enabler> val = std::make_shared<make_shared_enabler>();
@@ -401,13 +348,13 @@ std::shared_ptr<UploadHyperThoughtData> UploadHyperThoughtData::New()
 }
 
 // -----------------------------------------------------------------------------
-QString UploadHyperThoughtData::getNameOfClass() const
+QString UploadHyperThoughtFile::getNameOfClass() const
 {
-  return QString("UploadHyperThoughtData");
+  return QString("UploadHyperThoughtFile");
 }
 
 // -----------------------------------------------------------------------------
-QString UploadHyperThoughtData::ClassName()
+QString UploadHyperThoughtFile::ClassName()
 {
-  return QString("UploadHyperThoughtData");
+  return QString("UploadHyperThoughtFile");
 }

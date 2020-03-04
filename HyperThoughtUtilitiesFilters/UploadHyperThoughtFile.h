@@ -42,15 +42,12 @@
 #include "HyperThoughtUtilities/HyperThoughtConnection/HTMetaData.h"
 #include "HyperThoughtUtilities/HyperThoughtUtilitiesPlugin.h"
 
-class HTDataUploadRequest;
-class IDataArray;
-using IDataArrayShPtrType = std::shared_ptr<IDataArray>;
-using IDataArrayWkPtrType = std::weak_ptr<IDataArray>;
+class HTFileUploadRequest;
 
 /**
- * @brief The UploadHyperThoughtData class. See [Filter documentation](@ref uploadhyperthoughtdata) for details.
+ * @brief The UploadHyperThoughtFile class. See [Filter documentation](@ref UploadHyperThoughtFile) for details.
  */
-class HyperThoughtUtilities_EXPORT UploadHyperThoughtData : public AbstractFilter
+class HyperThoughtUtilities_EXPORT UploadHyperThoughtFile : public AbstractFilter
 {
   Q_OBJECT
 
@@ -59,13 +56,11 @@ class HyperThoughtUtilities_EXPORT UploadHyperThoughtData : public AbstractFilte
   PYB11_CREATE_BINDINGS(UploadHyperThoughtData SUPERCLASS AbstractFilter)
   PYB11_SHARED_POINTERS(UploadHyperThoughtData)
   PYB11_FILTER_NEW_MACRO(UploadHyperThoughtData)
-  PYB11_FILTER_PARAMETER(DataArrayPath UploadDataArrayPath)
-  PYB11_FILTER_PARAMETER(QString UploadFileName)
+  PYB11_FILTER_PARAMETER(QString, LocalFilePath)
   PYB11_FILTER_PARAMETER(HTFilePath, UploadFilePath)
   PYB11_FILTER_PARAMETER(bool, UpdateMetaData)
   PYB11_FILTER_PARAMETER(HTMetaData, MetaData)
-  PYB11_PROPERTY(DataArrayPath UploadDataArrayPath READ getUploadDataArrayPath WRITE setUploadDataArrayPath)
-  PYB11_PROPERTY(QString UploadFileName READ getUploadFileName WRITE setUploadFileName)
+  PYB11_PROPERTY(QString LocalFilePath READ getLocalFilePath WRITE setLocalFilePath)
   PYB11_PROPERTY(HTFilePath UploadFilePath READ getUploadFilePath WRITE setUploadFilePath)
   PYB11_PROPERTY(bool UpdateMetaData READ getUpdatesMetaData WRITE setUpdatesMetaData)
   PYB11_PROPERTY(HTMetaData MetaData READ getMetaData WRITE setMetaData)
@@ -73,57 +68,44 @@ class HyperThoughtUtilities_EXPORT UploadHyperThoughtData : public AbstractFilte
   // clang-format on
 #endif
 
-  Q_PROPERTY(DataArrayPath UploadDataArrayPath READ getUploadDataArrayPath WRITE setUploadDataArrayPath)
-  Q_PROPERTY(QString UploadFileName READ getUploadFileName WRITE setUploadFileName)
+  Q_PROPERTY(QString LocalFilePath READ getLocalFilePath WRITE setLocalFilePath)
   Q_PROPERTY(HTFilePath UploadFilePath READ getUploadFilePath WRITE setUploadFilePath)
   Q_PROPERTY(bool UpdateMetaData READ getUpdatesMetaData WRITE setUpdatesMetaData)
   Q_PROPERTY(HTMetaData MetaData READ getMetaData WRITE setMetaData)
 
 public:
-  using Self = UploadHyperThoughtData;
+  using Self = UploadHyperThoughtFile;
   using Pointer = std::shared_ptr<Self>;
   using ConstPointer = std::shared_ptr<const Self>;
   using WeakPointer = std::weak_ptr<Self>;
   using ConstWeakPointer = std::weak_ptr<const Self>;
   static Pointer NullPointer();
 
-  static std::shared_ptr<UploadHyperThoughtData> New();
+  static std::shared_ptr<UploadHyperThoughtFile> New();
 
   /**
-   * @brief Returns the name of the class for UploadHyperThoughtData
+   * @brief Returns the name of the class for UploadHyperThoughtFile
    */
   QString getNameOfClass() const override;
 
   /**
-   * @brief Returns the name of the class for UploadHyperThoughtData
+   * @brief Returns the name of the class for UploadHyperThoughtFile
    */
   static QString ClassName();
 
-  ~UploadHyperThoughtData() override;
+  ~UploadHyperThoughtFile() override;
 
   /**
-   * @brief Returns the upload data array path.
+   * @brief Returns the local file path.
    * @return
    */
-  DataArrayPath getUploadDataArrayPath() const;
+  QString getLocalFilePath() const;
 
   /**
-   * @brief Sets the upload data array path.
+   * @brief Sets the local file path.
    * @param path
    */
-  void setUploadDataArrayPath(const DataArrayPath& path);
-
-  /**
-   * @brief Returns the upload file name.
-   * @return
-   */
-  QString getUploadFileName() const;
-
-  /**
-   * @brief Sets the upload file name.
-   * @param fileName
-   */
-  void setUploadFileName(const QString& fileName);
+  void setLocalFilePath(const QString& path);
 
   /**
    * @brief Returns the HyperThought file path for uploading the file.
@@ -138,25 +120,25 @@ public:
   void setUploadFilePath(const HTFilePath& filepPath);
 
   /**
-   * @brief Returns whether or not the filter updates the uploaded data's metadata.
+   * @brief Returns whether or not the filter updates the uploaded file's metadata.
    * @return
    */
   bool getUpdatesMetaData() const;
 
   /**
-   * @brief Sets whether or not the filter updates the uploaded data's metadata.
+   * @brief Sets whether or not the filter updates the uploaded file's metadata.
    * @param updates
    */
   void setUpdatesMetaData(bool updates);
 
   /**
-   * @brief Returns the current metadata for uploading the data.
+   * @brief Returns the current metadata for uploading the file.
    * @return
    */
   HTMetaData getMetaData() const;
 
   /**
-   * @brief Sets the metadata for uploading the data.
+   * @brief Sets the metadata for uploading the file.
    * @param data
    */
   void setMetaData(const HTMetaData& data);
@@ -245,7 +227,7 @@ signals:
   void preflightExecuted();
 
 protected:
-  UploadHyperThoughtData();
+  UploadHyperThoughtFile();
 
   /**
    * @brief dataCheck Checks for the appropriate parameter values and availability of arrays
@@ -258,41 +240,32 @@ protected:
   void initialize();
 
   /**
-   * @brief Begin uploading the chosen data array to HyperThought.
+   * @brief Begin uploading the local file to HyperThought.
    * This method waits for the request to be completed before continuing.
    */
-  void uploadData(const QByteArray& data);
+  void uploadFile();
 
   /**
-   * @brief Called when the data has been uploaded to HyperThought.
+   * @brief Called when the file has been uploaded to HyperThought.
    */
   void onUploadComplete();
 
   /**
-   * @brief Called when there was an error uploading the data to HyperThought.
+   * @brief Called when there was an error uploading the file to HyperThought.
    * @param err
    */
   void onUploadError(QNetworkReply::NetworkError err);
 
 private:
-  DataArrayPath m_UploadDataArrayPath;
-  QString m_UploadFileName;
+  QString m_LocalFilePath;
   HTFilePath m_UploadFilePath;
   bool m_UpdateMetaData = true;
   HTMetaData m_MetaData;
-  HTDataUploadRequest* m_UploadRequest = nullptr;
-  IDataArrayWkPtrType m_UploadDataArrayWeakPtr;
-
-  /**
-   * @brief Converts a DataArray to a QByteArray
-   * @param dataArrayPtr
-   * @return
-   */
-  QByteArray convertDataArrayToByteArray(const IDataArrayShPtrType& dataArrayPtr);
+  HTFileUploadRequest* m_UploadRequest = nullptr;
 
 public:
-  UploadHyperThoughtData(const UploadHyperThoughtData&) = delete;            // Copy Constructor Not Implemented
-  UploadHyperThoughtData& operator=(const UploadHyperThoughtData&) = delete; // Copy Assignment Not Implemented
-  UploadHyperThoughtData(UploadHyperThoughtData&&) = delete;                 // Move Constructor Not Implemented
-  UploadHyperThoughtData& operator=(UploadHyperThoughtData&&) = delete;      // Move Assignment Not Implemented
+  UploadHyperThoughtFile(const UploadHyperThoughtFile&) = delete;            // Copy Constructor Not Implemented
+  UploadHyperThoughtFile& operator=(const UploadHyperThoughtFile&) = delete; // Copy Assignment Not Implemented
+  UploadHyperThoughtFile(UploadHyperThoughtFile&&) = delete;                 // Move Constructor Not Implemented
+  UploadHyperThoughtFile& operator=(UploadHyperThoughtFile&&) = delete;      // Move Assignment Not Implemented
 };
