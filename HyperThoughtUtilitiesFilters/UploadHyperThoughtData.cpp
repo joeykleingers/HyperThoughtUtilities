@@ -380,7 +380,7 @@ QString UploadHyperThoughtData::getHumanLabel() const
 // -----------------------------------------------------------------------------
 QUuid UploadHyperThoughtData::getUuid() const
 {
-  return QUuid("{afff1ad4-a7a3-53a6-9a8e-02cccaaf6e48}");
+  return QUuid("{4cbc6b8c-acdd-598b-bcd3-a57e61d9b57b}");
 }
 
 // -----------------------------------------------------------------------------
